@@ -4,41 +4,42 @@ const medicalRecordSchema = new mongoose.Schema({
     idRecord: {
         type: Number,
         required: true,
-        unique: true
+        unique: true,
     },
     idPatient: {
         type: Number,
-        required: true
+        required: true,
     },
     creationDate: {
         type: Date,
-        default: Date.now
+        default: Date.now,
     },
     lastupdateDate: {
         type: Date,
-        default: Date.now
+        default: Date.now,
     },
     allergies: {
         type: String,
-        default: ''
+        default: '',
     },
     medications: {
         type: String,
-        default: ''
+        default: '',
     },
     diagnostics: {
         type: String,
-        default: ''
-    }
-},
-
-
-    {
-    timestamps: true
+        default: '',
+    },
+    consultations: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Consultation', // Référence vers le modèle Consultation
+    }],
+}, {
+    timestamps: true,
 });
 
-// Update the lastupdateDate before saving
-medicalRecordSchema.pre('save', function(next) {
+// Mettre à jour la date de dernière modification avant de sauvegarder
+medicalRecordSchema.pre('save', function (next) {
     this.lastupdateDate = new Date();
     next();
 });

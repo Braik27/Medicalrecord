@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './app.css';
+import './App.css';
 
 // Configuration de l'URL de base pour les requêtes API
 const API_URL = 'http://localhost:3001/api/medical-records';
+const CONSULTATION_API_URL = 'http://localhost:3001/api/consultations';
 
 function App() {
     // États pour la gestion des données
@@ -18,8 +19,17 @@ function App() {
         medications: '',
         diagnostics: ''
     });
+    const [consultationFormData, setConsultationFormData] = useState({
+        idConsultation: '',
+        consultationDate: '',
+        doctor: '',
+        prescription: '',
+        treatment: '',
+        medicalRecordId: ''
+    });
     const [message, setMessage] = useState({ text: '', type: '' });
     const [isEditing, setIsEditing] = useState(false);
+    const [showConsultationForm, setShowConsultationForm] = useState(false);
 
     // Chargement initial des dossiers médicaux
     useEffect(() => {
@@ -104,10 +114,32 @@ function App() {
         }
     };
 
+    const createConsultation = async () => {
+        try {
+            const response = await axios.post(CONSULTATION_API_URL, consultationFormData);
+            setMedicalRecords(
+                medicalRecords.map(record =>
+                    record._id === consultationFormData.medicalRecordId
+                        ? { ...record, consultations: [...record.consultations, response.data] }
+                        : record
+                )
+            );
+            setMessage({ text: 'Consultation ajoutée avec succès', type: 'success' });
+            resetConsultationForm();
+        } catch (error) {
+            setMessage({ text: `Erreur: ${error.response?.data?.message || error.message}`, type: 'error' });
+        }
+    };
+
     // Gestionnaires d'événements
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+    };
+
+    const handleConsultationInputChange = (e) => {
+        const { name, value } = e.target;
+        setConsultationFormData({ ...consultationFormData, [name]: value });
     };
 
     const handleSubmit = (e) => {
@@ -117,6 +149,11 @@ function App() {
         } else {
             createRecord();
         }
+    };
+
+    const handleConsultationSubmit = (e) => {
+        e.preventDefault();
+        createConsultation();
     };
 
     const handleEdit = (record) => {
@@ -143,7 +180,18 @@ function App() {
         setCurrentRecord(null);
     };
 
-    // Formatage de la date
+    const resetConsultationForm = () => {
+        setConsultationFormData({
+            idConsultation: '',
+            consultationDate: '',
+            doctor: '',
+            prescription: '',
+            treatment: '',
+            medicalRecordId: ''
+        });
+        setShowConsultationForm(false);
+    };
+
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleString();
     };
@@ -269,6 +317,10 @@ function App() {
                                             <div className="record-actions">
                                                 <button className="edit-btn" onClick={() => handleEdit(record)}>Modifier</button>
                                                 <button className="delete-btn" onClick={() => deleteRecord(record.idRecord)}>Supprimer</button>
+                                                <button className="add-consultation-btn" onClick={() => {
+                                                    setConsultationFormData({ ...consultationFormData, medicalRecordId: record._id });
+                                                    setShowConsultationForm(true);
+                                                }}>Ajouter une consultation</button>
                                             </div>
                                         </div>
                                         <div className="record-details">
@@ -290,6 +342,22 @@ function App() {
                                                 <h4>Diagnostics</h4>
                                                 <p>{record.diagnostics || 'Aucun diagnostic enregistré'}</p>
                                             </div>
+
+                                            <div className="record-section">
+                                                <h4>Consultations</h4>
+                                                {record.consultations && record.consultations.length > 0 ? (
+                                                    record.consultations.map((consultation) => (
+                                                        <div key={consultation._id} className="consultation-card">
+                                                            <p><strong>Date:</strong> {formatDate(consultation.consultationDate)}</p>
+                                                            <p><strong>Médecin:</strong> {consultation.doctor}</p>
+                                                            <p><strong>Prescription:</strong> {consultation.prescription}</p>
+                                                            <p><strong>Traitement:</strong> {consultation.treatment}</p>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p>Aucune consultation enregistrée</p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -299,6 +367,79 @@ function App() {
                         )}
                     </section>
                 </div>
+
+                {showConsultationForm && (
+                    <div className="modal-overlay">
+                        <div className="modal">
+                            <button
+                                className="close-modal-btn"
+                                onClick={resetConsultationForm}
+                            >
+                                ×
+                            </button>
+                            <h2>Ajouter une consultation</h2>
+                            <form onSubmit={handleConsultationSubmit}>
+                                <div className="form-group">
+                                    <label>ID de la consultation:</label>
+                                    <input
+                                        type="number"
+                                        name="idConsultation"
+                                        value={consultationFormData.idConsultation}
+                                        onChange={handleConsultationInputChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Date de la consultation:</label>
+                                    <input
+                                        type="date"
+                                        name="consultationDate"
+                                        value={consultationFormData.consultationDate}
+                                        onChange={handleConsultationInputChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Médecin:</label>
+                                    <input
+                                        type="text"
+                                        name="doctor"
+                                        value={consultationFormData.doctor}
+                                        onChange={handleConsultationInputChange}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Prescription:</label>
+                                    <textarea
+                                        name="prescription"
+                                        value={consultationFormData.prescription}
+                                        onChange={handleConsultationInputChange}
+                                        rows="3"
+                                    />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Traitement:</label>
+                                    <textarea
+                                        name="treatment"
+                                        value={consultationFormData.treatment}
+                                        onChange={handleConsultationInputChange}
+                                        rows="3"
+                                    />
+                                </div>
+
+                                <div className="form-buttons">
+                                    <button type="submit" className="submit-btn">Ajouter</button>
+                                    <button type="button" className="cancel-btn" onClick={resetConsultationForm}>Annuler</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

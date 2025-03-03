@@ -5,27 +5,27 @@ import {
     getMedicalRecordsByPatientId,
     createMedicalRecord,
     updateMedicalRecord,
-    deleteMedicalRecord
+    deleteMedicalRecord,
 } from '../controllers/medicalRecordController.js';
 
 const router = express.Router();
 
-// GET all medical records
+// GET tous les dossiers médicaux
 router.get('/', getAllMedicalRecords);
 
-// GET a single medical record by ID
+// GET un dossier médical par ID
 router.get('/:id', getMedicalRecordById);
 
-// GET medical records by patient ID
+// GET les dossiers médicaux par ID de patient
 router.get('/patient/:patientId', getMedicalRecordsByPatientId);
 
-// POST a new medical record
+// POST un nouveau dossier médical
 router.post('/', createMedicalRecord);
 
-// PUT (update) a medical record
+// PUT (mettre à jour) un dossier médical
 router.put('/:id', updateMedicalRecord);
 
-// DELETE a medical record
+// DELETE un dossier médical
 router.delete('/:id', deleteMedicalRecord);
 
 export default router;

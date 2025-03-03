@@ -1,6 +1,6 @@
 import MedicalRecord from '../models/MedicalRecord.js';
 
-// Get all medical records
+// GET tous les dossiers médicaux
 export const getAllMedicalRecords = async (req, res) => {
     try {
         const medicalRecords = await MedicalRecord.find();
@@ -10,7 +10,7 @@ export const getAllMedicalRecords = async (req, res) => {
     }
 };
 
-// Get a single medical record by ID
+// GET un dossier médical par ID
 export const getMedicalRecordById = async (req, res) => {
     try {
         const medicalRecord = await MedicalRecord.findOne({ idRecord: req.params.id });
@@ -25,7 +25,7 @@ export const getMedicalRecordById = async (req, res) => {
     }
 };
 
-// Get medical records by patient ID
+// GET les dossiers médicaux par ID de patient
 export const getMedicalRecordsByPatientId = async (req, res) => {
     try {
         const medicalRecords = await MedicalRecord.find({ idPatient: req.params.patientId });
@@ -40,10 +40,9 @@ export const getMedicalRecordsByPatientId = async (req, res) => {
     }
 };
 
-// Create a new medical record
+// POST un nouveau dossier médical
 export const createMedicalRecord = async (req, res) => {
     try {
-        // Check if a record with the same idRecord already exists
         const existingRecord = await MedicalRecord.findOne({ idRecord: req.body.idRecord });
         if (existingRecord) {
             return res.status(400).json({ message: 'A medical record with this ID already exists' });
@@ -58,7 +57,7 @@ export const createMedicalRecord = async (req, res) => {
     }
 };
 
-// Update a medical record
+// PUT (mettre à jour) un dossier médical
 export const updateMedicalRecord = async (req, res) => {
     try {
         const updatedMedicalRecord = await MedicalRecord.findOneAndUpdate(
@@ -80,7 +79,7 @@ export const updateMedicalRecord = async (req, res) => {
     }
 };
 
-// Delete a medical record
+// DELETE un dossier médical
 export const deleteMedicalRecord = async (req, res) => {
     try {
         const deletedMedicalRecord = await MedicalRecord.findOneAndDelete({ idRecord: req.params.id });
